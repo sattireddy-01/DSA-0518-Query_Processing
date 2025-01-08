@@ -1,0 +1,102 @@
+1.1
+import pandas as pd
+import matplotlib.pyplot as plt
+data = {'Timestamp': pd.date_range(start='2023-01-01', periods=100, freq='D'),
+        'User': ['user1']*50 + ['user2']*50,
+        'Message': ['message']*100,
+        'SentimentScore': np.random.uniform(-1, 1, 100)}
+df = pd.DataFrame(data)
+df['Timestamp'] = pd.to_datetime(df['Timestamp'])
+sentiment_trend = df.resample('D', on='Timestamp')['SentimentScore'].mean()
+plt.figure(figsize=(10, 5))
+plt.plot(sentiment_trend)
+plt.title('Sentiment Trends Over Time')
+plt.xlabel('Date')
+plt.ylabel('Average Sentiment Score')
+plt.show()
+1.2
+user_sentiment = df.groupby('User')['SentimentScore'].mean()
+most_positive_user = user_sentiment.idxmax()
+most_negative_user = user_sentiment.idxmin()
+print(f'Most positive user: {most_positive_user} with average sentiment score {user_sentiment[most_positive_user]}')
+print(f'Most negative user: {most_negative_user} with average sentiment score {user_sentiment[most_negative_user]}')
+2.1
+import pandas as pd
+events = pd.DataFrame({'EventID': [1, 2, 3],
+                       'StartTime': pd.to_datetime(['2023-01-01', '2023-01-02', '2023-01-03']),
+                       'EndTime': pd.to_datetime(['2023-01-01', '2023-01-02', '2023-01-04'])})
+intervals = pd.DataFrame({'IntervalID': [1, 2],
+                          'StartInterval': pd.to_datetime(['2023-01-01', '2023-01-02']),
+                          'EndInterval': pd.to_datetime(['2023-01-02', '2023-01-03'])})
+joined = pd.merge_asof(events.sort_values('StartTime'), intervals.sort_values('StartInterval'),
+                       left_on='StartTime', right_on='StartInterval', direction='forward')
+print(joined)
+2.2
+joined['OverlapStart'] = joined[['StartTime', 'StartInterval']].max(axis=1)
+joined['OverlapEnd'] = joined[['EndTime', 'EndInterval']].min(axis=1)
+joined['Duration'] = (joined['OverlapEnd'] - joined['OverlapStart']).dt.total_seconds() / 3600  # Duration in hours
+print(joined[['EventID', 'IntervalID', 'Duration']])
+2.3
+data = {'Timestamp': pd.date_range(start='2023-01-01', periods=100, freq='D'),
+        'Event': np.random.choice(['Event1', 'Event2'], size=100)}
+df = pd.DataFrame(data)
+df['EventCount'] = df.groupby('Event')['Event'].transform('count')
+df['RollingAvg'] = df['EventCount'].rolling(window=7).mean()
+print(df.head())
+3
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from statsmodels.tsa.seasonal import seasonal_decompose
+data = {'Timestamp': pd.date_range(start='2023-01-01', periods=100, freq='D'),
+        'Metric': np.random.randn(100)}
+df = pd.DataFrame(data)
+df['RollingAvg'] = df['Metric'].rolling(window=7).mean()
+plt.figure(figsize=(10, 5))
+plt.plot(df['Timestamp'], df['Metric'], label='Original')
+plt.plot(df['Timestamp'], df['RollingAvg'], label='Rolling Average')
+plt.title('Rolling Average of Metric Over Time')
+plt.xlabel('Date')
+plt.ylabel('Metric')
+plt.legend()
+plt.show()
+decomposition = seasonal_decompose(df.set_index('Timestamp')['Metric'], model='additive', period=30)
+decomposition.plot()
+plt.show()
+4.
+import pandas as pd
+data = {'Date': pd.date_range(start='2023-01-01', periods=100, freq='D'),
+        'Product': np.random.choice(['Product1', 'Product2'], size=100),
+        'Quantity': np.random.randint(1, 10, size=100),
+        'Revenue': np.random.randint(100, 1000, size=100)}
+df = pd.DataFrame(data)
+df['Date'] = pd.to_datetime(df['Date'])
+df['Month'] = df['Date'].dt.to_period('M')
+max_revenue_per_month = df.loc[df.groupby('Month')['Revenue'].idxmax()]
+df['Highlight'] = df.index.isin(max_revenue_per_month.index)
+print(df.style.apply(lambda x: ['background: yellow' if v else '' for v in x], subset=['Highlight']))
+5.
+import numpy as np
+import matplotlib.pyplot as plt
+men_means = [22, 30, 35, 35, 26]
+women_means = [25, 32, 30, 35, 29]
+men_std = [4, 3, 4, 1, 5]
+women_std = [3, 5, 2, 3, 3]
+ind = np.arange(len(men_means))  # the x locations for the groups
+width = 0.35  # the width of the bars
+fig, ax = plt.subplots()
+p1 = ax.bar(ind, men_means, width, yerr=men_std, label='Men')
+p2 = ax.bar(ind, women_means, width, bottom=men_means, yerr=women_std, label='Women')
+ax.axhline(0, color='grey', linewidth=0.8)
+ax.set_ylabel('Scores')
+ax.set_title('Scores by group and gender')
+ax.set_xticks(ind)
+ax.set_xticklabels(['Group1', 'Group2', 'Group3', 'Group4', 'Group5'])
+ax.legend()
+plt.show()
+
+
+
+
+
+
